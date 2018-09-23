@@ -132,17 +132,19 @@ vpn() { local server="$1" user="$2" pass="$3" port="${4:-1194}" i \
     echo "persist-key" >>$conf
     echo "persist-tun" >>$conf
     [[ "${CIPHER:-""}" ]] && echo "cipher $CIPHER" >>$conf
-    [[ "${AUTH:-""}" ]] && echo "auth $AUTH" >>$conf
-    echo "tls-client" >>$conf
-    echo "remote-cert-tls server" >>$conf
-    echo "auth-user-pass $auth" >>$conf
-    echo "comp-lzo" >>$conf
+    # [[ "${AUTH:-""}" ]] && echo "auth $AUTH" >>$conf
+    # echo "tls-client" >>$conf
+    # echo "remote-cert-tls server" >>$conf
+    # echo "auth-user-pass $auth" >>$conf
+    # echo "comp-lzo" >>$conf
     echo "verb 1" >>$conf
     echo "reneg-sec 0" >>$conf
     echo "redirect-gateway def1" >>$conf
     echo "disable-occ" >>$conf
     echo "fast-io" >>$conf
     echo "ca $cert" >>$conf
+    echo "cert $cert2" >>$conf
+    echo "key $key" >>$conf
     [[ $(wc -w <<< $pem) -eq 1 ]] && echo "crl-verify $pem" >>$conf
 
     echo "$user" >$auth
@@ -203,13 +205,15 @@ The 'command' (if provided and valid) will be run instead of openvpn
 dir="/vpn"
 auth="$dir/vpn.cert_auth"
 conf="$dir/vpn.conf"
-cert="$dir/vpn-ca.crt"
+cert="$dir/vpn.ca"
+cert2="$dir/vpn.cert"
+key="$dir/vpn.key"
 route="$dir/.firewall"
 route6="$dir/.firewall6"
-[[ -f $conf ]] || { [[ $(ls $dir/*|egrep '\.(conf|ovpn)$' 2>&-|wc -w) -eq 1 ]]&&
-            conf="$(ls $dir/* | egrep '\.(conf|ovpn)$' 2>&-)"; }
-[[ -f $cert ]] || { [[ $(ls $dir/* | egrep '\.ce?rt$' 2>&- | wc -w) -eq 1 ]] &&
-            cert="$(ls $dir/* | egrep '\.ce?rt$' 2>&-)"; }
+[[ -f $conf ]] || { [[ $(ls -d $dir/*|egrep '\.(conf|ovpn)$' 2>&-|wc -w) -eq 1 ]]&&
+             conf="$(ls -d $dir/* | egrep '\.(conf|ovpn)$' 2>&-)"; }
+[[ -f $cert ]] || { [[ $(ls -d $dir/* | egrep '\.ce?rt$' 2>&- | wc -w) -eq 1 ]] &&
+             cert="$(ls -d $dir/* | egrep '\.ce?rt$' 2>&-)"; }
 
 while getopts ":hc:df:p:R:r:v:" opt; do
     case "$opt" in
